@@ -82,5 +82,9 @@ describe('Masterchef test cases ', async () => {
     finalmasterShef = await lpToken1.balanceOf(signer[0].address);
     console.log('Lp token balance of signer: - ', finalSigner);
     console.log('Lp token at masterchef: - ', finalmasterShef);
+
+    expect(initalSignerBalance).to.be.greaterThan(finalSigner);
+    expect(finalmasterShef).to.be.greaterThan(initalMasterShef);
+    // expect(finalmasterShef).to.be.equal(400);
   });
 });
