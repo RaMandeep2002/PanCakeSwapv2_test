@@ -1,0 +1,81 @@
+const { expect } = require('chai');
+const { ethers } = require('hardhat');
+
+describe('Masterchef test cases ', async () => {
+  let masterchef;
+  let signer;
+  let cakeToken;
+  let syrupbar;
+  let lpToken1;
+  let lpToken2;
+  beforeEach(async () => {
+    signer = await ethers.getSigners();
+
+    const CakeTokenContract = await ethers.getContractFactory('CakeToken');
+    cakeToken = await CakeTokenContract.connect(signer[0]).deploy();
+
+    const SyrupBarContract = await ethers.getContractFactory('SyrupBar');
+    syrupbar = await SyrupBarContract.connect(signer[0]).deploy(
+      cakeToken.target
+    );
+
+    const MasterChefv2 = await ethers.getContractFactory('MasterChef');
+    masterchef = await MasterChefv2.connect(signer[0]).deploy(
+      cakeToken.target,
+      syrupbar.target,
+      signer[1].address,
+      1000,
+      10
+    );
+
+    const LpToken1 = await ethers.getContractFactory('MockBEP20');
+
+    lpToken1 = await LpToken1.connect(signer[0]).deploy(
+      'LP',
+      'LPToken',
+      ethers.parseEther('1000')
+    );
+    lpToken2 = await LpToken1.connect(signer[0]).deploy(
+      'LP2',
+      'LPToken2',
+      ethers.parseEther('1000')
+    );
+
+    // await cakeToken.transferOwnership(masterchef.target);
+    // await syrupbar.transferOwnership(masterchef.target);
+  });
+  it('Print addresses of contract', async () => {
+    console.log('Signer Address: - ', await signer[0].address);
+    console.log('Cake Token Address: - ', await cakeToken.target);
+    console.log('SyrunBar Token address: - ', await syrupbar.target);
+    console.log('Masterchef Address: - ', await masterchef.target);
+    console.log('Lptoken Address: - ', await lpToken1.target);
+  });
+
+  it('Masterchef v2 add funciton', async () => {
+    console.log('Add function..');
+
+    await masterchef.add(100, lpToken1.target, true);
+    console.log('Pool Lenght: ', await masterchef.poolLength());
+
+    await masterchef.add(200, lpToken2.target, true);
+    console.log('pool length ', await masterchef.poolLength());
+
+    expect(await masterchef.poolLength()).to.be.equal(3n);
+  });
+  it('Deposit Function : ', async () => {
+    console.log('Deposit function');
+    console.log('BEFORE DEPOSIT');
+    await masterchef.add(100, lpToken1.target, true);
+    initalSignerBalance = await lpToken1.balanceOf(signer[0].address);
+    initalMasterShef = await lpToken1.balanceOf(masterchef.target);
+    console.log('lp token balance of Signer: ', initalSignerBalance);
+    console.log('lp token balance of Master chef: ', initalMasterShef);
+
+    await lpToken1.connect(signer[0]).approve(masterchef.target, 900);
+    await masterchef.connect(signer[0]).deposit(1, 200);
+
+    // console.log(await lpToken1.name());
+    console.log('AFTER DEPOSIT');
+  });
+});
