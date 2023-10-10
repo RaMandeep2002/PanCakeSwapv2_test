@@ -33,16 +33,16 @@ describe('Masterchef test cases ', async () => {
     lpToken1 = await LpToken1.connect(signer[0]).deploy(
       'LP',
       'LPToken',
-      ethers.parseEther('1000')
+      ethers.parseEther('100000')
     );
     lpToken2 = await LpToken1.connect(signer[0]).deploy(
       'LP2',
       'LPToken2',
-      ethers.parseEther('1000')
+      ethers.parseEther('100000')
     );
 
-    // await cakeToken.transferOwnership(masterchef.target);
-    // await syrupbar.transferOwnership(masterchef.target);
+    await cakeToken.transferOwnership(masterchef.target);
+    await syrupbar.transferOwnership(masterchef.target);
   });
   it('Print addresses of contract', async () => {
     console.log('Signer Address: - ', await signer[0].address);
@@ -66,7 +66,7 @@ describe('Masterchef test cases ', async () => {
   it('Deposit Function : ', async () => {
     console.log('Deposit function');
     console.log('BEFORE DEPOSIT');
-    await masterchef.add(100, lpToken1.target, true);
+    await masterchef.add(1000, lpToken1.target, true);
     initalSignerBalance = await lpToken1.balanceOf(signer[0].address);
     initalMasterShef = await lpToken1.balanceOf(masterchef.target);
     console.log('lp token balance of Signer: ', initalSignerBalance);
@@ -74,17 +74,17 @@ describe('Masterchef test cases ', async () => {
 
     await lpToken1.connect(signer[0]).approve(masterchef.target, 900);
     await masterchef.connect(signer[0]).deposit(1, 200);
-
+    // await masterchef.connect(signer[0]).deposit(1, 200);
     // console.log(await lpToken1.name());
     console.log('AFTER DEPOSIT');
 
     finalSigner = await lpToken1.balanceOf(signer[0].address);
-    finalmasterShef = await lpToken1.balanceOf(signer[0].address);
+    finalmasterShef = await lpToken1.balanceOf(masterchef.target);
     console.log('Lp token balance of signer: - ', finalSigner);
     console.log('Lp token at masterchef: - ', finalmasterShef);
 
     expect(initalSignerBalance).to.be.greaterThan(finalSigner);
     expect(finalmasterShef).to.be.greaterThan(initalMasterShef);
-    // expect(finalmasterShef).to.be.equal(400);
+    expect(finalmasterShef).to.be.equal(200);
   });
 });
