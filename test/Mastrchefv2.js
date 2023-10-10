@@ -77,5 +77,10 @@ describe('Masterchef test cases ', async () => {
 
     // console.log(await lpToken1.name());
     console.log('AFTER DEPOSIT');
+
+    finalSigner = await lpToken1.balanceOf(signer[0].address);
+    finalmasterShef = await lpToken1.balanceOf(signer[0].address);
+    console.log('Lp token balance of signer: - ', finalSigner);
+    console.log('Lp token at masterchef: - ', finalmasterShef);
   });
 });
