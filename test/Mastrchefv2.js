@@ -73,7 +73,7 @@ describe('Masterchef test cases ', async () => {
     expect(await masterchef.poolLength()).to.be.equal(3n);
   });
   describe('Deposit fuction Testing', async () => {
-    it.only('Deposit Function : ', async () => {
+    it('Deposit Function : ', async () => {
       console.log('Deposit function');
       console.log('BEFORE DEPOSIT');
       await masterchef.add(1000, lpToken1.target, true);
@@ -158,7 +158,7 @@ describe('Masterchef test cases ', async () => {
     });
   });
   describe('EnterStaking Function and LeaveStaking function Testing', async () => {
-    it.only('Enter staking: - ', async () => {
+    it('Enter staking: - ', async () => {
       //   await _deposit();
       await _beforeStaking();
 
@@ -179,6 +179,68 @@ describe('Masterchef test cases ', async () => {
       finalSyrupbalance = await syrupbar.balanceOf(signer[0].address);
       console.log('Cake Balance of Signer : ', finalcakebalance);
       console.log('Syrup Balance of Signer : ', finalSyrupbalance);
+
+      expect(initialCake).to.be.greaterThan(finalcakebalance);
+      expect(finalSyrupbalance).to.be.greaterThan(initalSyrup);
     });
+    it('LeaveStaking Function : ', async () => {
+      await _beforeStaking();
+
+      await cakeToken.connect(signer[0]).approve(masterchef.target, 1000);
+      await masterchef.connect(signer[0]).enterStaking(500);
+
+      initialCake = await cakeToken.balanceOf(signer[0].address);
+      initialmasterchef = await lpToken1.balanceOf(masterchef.target);
+      initalSyrup = await syrupbar.balanceOf(signer[0].address);
+      console.log('Cake Balance of Signer: - ', initialCake);
+      console.log('Syrup Balance of Signer: - ', initalSyrup);
+      console.log('Initial balance of Mastechef: - ', initialmasterchef);
+
+      await masterchef.connect(signer[0]).leaveStaking(500);
+
+      console.log('AFTER LeaveSTAKING');
+      finalcakebalance = await cakeToken.balanceOf(signer[0].address);
+      finalSyrupbalance = await syrupbar.balanceOf(signer[0].address);
+      console.log('Cake Balance of Signer : ', finalcakebalance);
+      console.log('Syrup Balance of Signer : ', finalSyrupbalance);
+
+      expect(finalcakebalance).to.be.greaterThan(initialCake);
+      expect(initalSyrup).to.be.greaterThan(finalSyrupbalance);
+    });
+  });
+  it('EMERGENCY WITHDRAW FUNCITON : ', async () => {
+    await _deposit();
+
+    initialCake = await cakeToken.balanceOf(signer[0].address);
+    initialmasterchef = await lpToken1.balanceOf(masterchef.target);
+    initalSyrup = await syrupbar.balanceOf(signer[0].address);
+    console.log('Cake Balance of Signer: - ', initialCake);
+    console.log('Syrup Balance of Signer: - ', initalSyrup);
+    console.log('Initial balance of Mastechef: - ', initialmasterchef);
+
+    await masterchef.connect(signer[0]).emergencyWithdraw(1);
+
+    console.log('AFTER LeaveSTAKING');
+    finalcakebalance = await cakeToken.balanceOf(signer[0].address);
+    finalSyrupbalance = await syrupbar.balanceOf(signer[0].address);
+    console.log('Cake Balance of Signer : ', finalcakebalance);
+    console.log('Syrup Balance of Signer : ', finalSyrupbalance);
+  });
+  it('Dev Functon : ', async () => {
+    console.log(
+      'Dev address befor Dev Function called: - ',
+      await masterchef.devaddr()
+    );
+    await masterchef.connect(signer[1]).dev(signer[2].address);
+    console.log(
+      'Dev address after Dev Function called: - ',
+      await masterchef.devaddr()
+    );
+  });
+  it('Dev function with ERROR! check', async () => {
+    await expect(
+      masterchef.connect(signer[0]).dev(signer[0].address)
+    ).to.be.revertedWith('Dev: wut??');
+    console.log(await masterchef.devaddr());
   });
 });
