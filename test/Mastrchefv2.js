@@ -1,5 +1,4 @@
 const { expect } = require('chai');
-
 const { ethers } = require('hardhat');
 
 describe('Masterchef test cases ', async () => {
@@ -14,6 +13,10 @@ describe('Masterchef test cases ', async () => {
     await masterchef.add(100, lpToken1.target, true);
     await lpToken1.connect(signer[0]).approve(masterchef.target, 1000);
     await masterchef.connect(signer[0]).deposit(1, 500);
+  }
+  async function _beforeStaking() {
+    await _deposit();
+    await masterchef.connect(signer[0]).withdraw(1, 500);
   }
   beforeEach(async () => {
     signer = await ethers.getSigners();
@@ -58,7 +61,6 @@ describe('Masterchef test cases ', async () => {
     console.log('Masterchef Address: - ', await masterchef.target);
     console.log('Lptoken Address: - ', await lpToken1.target);
   });
-
   it('Masterchef v2 add funciton', async () => {
     console.log('Add function..');
 
@@ -71,7 +73,7 @@ describe('Masterchef test cases ', async () => {
     expect(await masterchef.poolLength()).to.be.equal(3n);
   });
   describe('Deposit fuction Testing', async () => {
-    it('Deposit Function : ', async () => {
+    it.only('Deposit Function : ', async () => {
       console.log('Deposit function');
       console.log('BEFORE DEPOSIT');
       await masterchef.add(1000, lpToken1.target, true);
@@ -153,6 +155,30 @@ describe('Masterchef test cases ', async () => {
       await expect(
         masterchef.connect(signer[0]).withdraw(1, 501)
       ).to.be.revertedWith('withdraw: not good');
+    });
+  });
+  describe('EnterStaking Function and LeaveStaking function Testing', async () => {
+    it.only('Enter staking: - ', async () => {
+      //   await _deposit();
+      await _beforeStaking();
+
+      console.log('BEFORE ENTERSTAKING');
+      initialCake = await cakeToken.balanceOf(signer[0].address);
+      initialmasterchef = await lpToken1.balanceOf(masterchef.target);
+      initalSyrup = await syrupbar.balanceOf(signer[0].address);
+      console.log('Cake Balance of Signer: - ', initialCake);
+      console.log('Syrup Balance of Signer: - ', initalSyrup);
+      console.log('Initial balance of Mastechef: - ', initialmasterchef);
+
+      await cakeToken.connect(signer[0]).approve(masterchef.target, 1000);
+      console.log('adsfasdf');
+      await masterchef.connect(signer[0]).enterStaking(500);
+
+      console.log('AFTER ENTERSTAKING');
+      finalcakebalance = await cakeToken.balanceOf(signer[0].address);
+      finalSyrupbalance = await syrupbar.balanceOf(signer[0].address);
+      console.log('Cake Balance of Signer : ', finalcakebalance);
+      console.log('Syrup Balance of Signer : ', finalSyrupbalance);
     });
   });
 });
