@@ -1,6 +1,6 @@
 const { expect } = require('chai');
+
 const { ethers } = require('hardhat');
-// const { int } = require('hardhat/internal/core/params/argumentTypes');
 
 describe('Masterchef test cases ', async () => {
   let masterchef;
@@ -9,6 +9,12 @@ describe('Masterchef test cases ', async () => {
   let syrupbar;
   let lpToken1;
   let lpToken2;
+
+  async function _deposit() {
+    await masterchef.add(100, lpToken1.target, true);
+    await lpToken1.connect(signer[0]).approve(masterchef.target, 1000);
+    await masterchef.connect(signer[0]).deposit(1, 500);
+  }
   beforeEach(async () => {
     signer = await ethers.getSigners();
 
@@ -64,64 +70,89 @@ describe('Masterchef test cases ', async () => {
 
     expect(await masterchef.poolLength()).to.be.equal(3n);
   });
-  it('Deposit Function : ', async () => {
-    console.log('Deposit function');
-    console.log('BEFORE DEPOSIT');
-    await masterchef.add(1000, lpToken1.target, true);
-    initalSignerBalance = await lpToken1.balanceOf(signer[0].address);
-    initalMasterShef = await lpToken1.balanceOf(masterchef.target);
-    cakeBalanceinitial = await cakeToken.balanceOf(signer[0].address);
-    console.log('lp token balance of Signer: ', initalSignerBalance);
-    console.log('lp token balance of Master chef: ', initalMasterShef);
-    console.log('Cake Token balance Initial: - ', cakeBalanceinitial);
+  describe('Deposit fuction Testing', async () => {
+    it('Deposit Function : ', async () => {
+      console.log('Deposit function');
+      console.log('BEFORE DEPOSIT');
+      await masterchef.add(1000, lpToken1.target, true);
+      initalSignerBalance = await lpToken1.balanceOf(signer[0].address);
+      initalMasterShef = await lpToken1.balanceOf(masterchef.target);
+      cakeBalanceinitial = await cakeToken.balanceOf(signer[0].address);
+      console.log('lp token balance of Signer: ', initalSignerBalance);
+      console.log('lp token balance of Master chef: ', initalMasterShef);
+      console.log('Cake Token balance Initial: - ', cakeBalanceinitial);
 
-    await lpToken1.connect(signer[0]).approve(masterchef.target, 900);
-    await masterchef.connect(signer[0]).deposit(1, 200);
-    // await masterchef.connect(signer[0]).deposit(1, 200);
-    // console.log(await lpToken1.name());
-    console.log('AFTER DEPOSIT');
+      await lpToken1.connect(signer[0]).approve(masterchef.target, 900);
+      await masterchef.connect(signer[0]).deposit(1, 200);
+      // await masterchef.connect(signer[0]).deposit(1, 200);
+      // console.log(await lpToken1.name());
+      console.log('AFTER DEPOSIT');
 
-    finalSigner = await lpToken1.balanceOf(signer[0].address);
-    finalmasterShef = await lpToken1.balanceOf(masterchef.target);
-    cakeBalanceFinal = await cakeToken.balanceOf(signer[0].address);
-    console.log('Lp token balance of signer: - ', finalSigner);
-    console.log('Lp token at masterchef: - ', finalmasterShef);
-    console.log('Cake Token balance Final : - ', cakeBalanceFinal);
+      finalSigner = await lpToken1.balanceOf(signer[0].address);
+      finalmasterShef = await lpToken1.balanceOf(masterchef.target);
+      cakeBalanceFinal = await cakeToken.balanceOf(signer[0].address);
+      console.log('Lp token balance of signer: - ', finalSigner);
+      console.log('Lp token at masterchef: - ', finalmasterShef);
+      console.log('Cake Token balance Final : - ', cakeBalanceFinal);
 
-    expect(initalSignerBalance).to.be.greaterThan(finalSigner);
-    expect(finalmasterShef).to.be.greaterThan(initalMasterShef);
-    expect(finalmasterShef).to.be.equal(200);
+      expect(initalSignerBalance).to.be.greaterThan(finalSigner);
+      expect(finalmasterShef).to.be.greaterThan(initalMasterShef);
+      expect(finalmasterShef).to.be.equal(200);
+    });
+    it('Deposit with Error', async () => {
+      await masterchef.add(1000, lpToken1.target, true);
+
+      await lpToken1.connect(signer[0]).approve(masterchef.target, 900);
+      await expect(
+        masterchef.connect(signer[0]).deposit(0, 200)
+      ).to.be.revertedWith('deposit CAKE by staking');
+    });
   });
+  describe('Withdraw Function Testing', async () => {
+    it('Withdraw Function : - ', async () => {
+      console.log('IN Withdraw Funciton');
+      await masterchef.add(100, lpToken1.target, true);
+      await lpToken1.connect(signer[0]).approve(masterchef.target, 1000);
+      await masterchef.connect(signer[0]).deposit(1, 300);
 
-  it.only('Withdraw Function : - ', async () => {
-    console.log('IN Withdraw Funciton');
-    await masterchef.add(100, lpToken1.target, true);
-    await lpToken1.connect(signer[0]).approve(masterchef.target, 1000);
-    await masterchef.connect(signer[0]).deposit(1, 300);
+      console.log('AFTER DEPOSIT');
 
-    console.log('AFTER DEPOSIT');
+      initalCake = await cakeToken.balanceOf(signer[0].address);
+      initialLpBalance = await lpToken1.balanceOf(signer[0].address);
+      initalMasterchef = await lpToken1.balanceOf(masterchef.target);
 
-    initalCake = await cakeToken.balanceOf(signer[0].address);
-    initialLpBalance = await lpToken1.balanceOf(signer[0].address);
-    initalMasterchef = await lpToken1.balanceOf(masterchef.target);
+      console.log('Initial Balance of Cake Token: - ', initalCake);
+      console.log('Initial Balance of Lp Token: - ', initialLpBalance);
+      console.log('Initial Balance of Masterchef Token: - ', initalMasterchef);
 
-    console.log('Initial Balance of Cake Token: - ', initalCake);
-    console.log('Initial Balance of Lp Token: - ', initialLpBalance);
-    console.log('Initial Balance of Masterchef Token: - ', initalMasterchef);
+      await masterchef.connect(signer[0]).withdraw(1, 250);
 
-    await masterchef.connect(signer[0]).withdraw(1, 250);
+      finalCakeafterDeposit = await cakeToken.balanceOf(signer[0].address);
+      FinalLpBalance = await lpToken1.balanceOf(signer[0].address);
+      finalMasterchef = await lpToken1.balanceOf(masterchef.target);
 
-    finalCakeafterDeposit = await cakeToken.balanceOf(signer[0].address);
-    FinalLpBalance = await lpToken1.balanceOf(signer[0].address);
-    finalMasterchef = await lpToken1.balanceOf(masterchef.target);
+      console.log('Final Balance of Cake Token: - ', finalCakeafterDeposit);
+      console.log('Final Balance of Lp Token: - ', FinalLpBalance);
+      console.log('Final Balance of Masterchef Token: - ', finalMasterchef);
 
-    console.log('Final Balance of Cake Token: - ', finalCakeafterDeposit);
-    console.log('Final Balance of Lp Token: - ', FinalLpBalance);
-    console.log('Final Balance of Masterchef Token: - ', finalMasterchef);
+      expect(finalCakeafterDeposit).to.be.greaterThan(initalCake);
+      expect(FinalLpBalance).to.be.greaterThan(initialLpBalance);
 
-    expect(finalCakeafterDeposit).to.be.greaterThan(initalCake);
-    expect(FinalLpBalance).to.be.greaterThan(initialLpBalance);
+      expect(initalMasterchef).to.be.greaterThan(finalMasterchef);
+    });
+    it('withdraw function fior error 1 check : ', async () => {
+      await _deposit();
 
-    expect(initalMasterchef).to.be.greaterThan(finalMasterchef);
+      await expect(
+        masterchef.connect(signer[0]).withdraw(0, 100)
+      ).to.be.revertedWith('withdraw CAKE by unstaking');
+    });
+    it('Withdraw Function for Error 2 check: - ', async () => {
+      await _deposit();
+
+      await expect(
+        masterchef.connect(signer[0]).withdraw(1, 501)
+      ).to.be.revertedWith('withdraw: not good');
+    });
   });
 });
