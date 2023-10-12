@@ -239,8 +239,8 @@ describe('Masterchef test cases ', async () => {
   });
   it('Dev function with ERROR! check', async () => {
     await expect(
-      masterchef.connect(signer[0]).dev(signer[0].address)
-    ).to.be.revertedWith('Dev: wut??');
+      masterchef.connect(signer[0]).dev(signer[2].address)
+    ).to.be.revertedWith('dev: wut?');
     console.log(await masterchef.devaddr());
   });
 });
