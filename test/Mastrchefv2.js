@@ -72,8 +72,34 @@ describe('Masterchef test cases ', async () => {
 
     expect(await masterchef.poolLength()).to.be.equal(3n);
   });
+  it('  *** Set Function ***  ', async () => {
+    await masterchef.add(100, lpToken1.target, true);
+    console.log(`Pool Length: ${await masterchef.poolLength()}`);
+    await masterchef.add(100, lpToken2.target, true);
+    console.log(`Pool Length: ${await masterchef.poolLength()}`);
+    console.log(`PoolInfo : ${await masterchef.poolInfo(1)}`);
+    await masterchef.set(1, 200, true);
+    console.log(`Pool Length: ${await masterchef.poolLength()}`);
+    await masterchef.poolInfo(1);
+    console.log(`PoolInfo : ${await masterchef.poolInfo(1)}`);
+    console.log(`Pool Length: ${await masterchef.poolLength()}`);
+    // expect(await masterChef.poolLength()).to.be.equal(3);
+
+    await lpToken1.connect(signer[0]).balanceOf(signer[0].address);
+    console.log(
+      `Balance of LPToken1 at Signer ${await lpToken1
+        .connect(signer[0])
+        .balanceOf(signer[0].address)}`
+    );
+    console.log(
+      `Balance of LPToken2 at Signer ${await lpToken2
+        .connect(signer[0])
+        .balanceOf(signer[0].address)}`
+    );
+  });
+
   describe('Deposit fuction Testing', async () => {
-    it('Deposit Function : ', async () => {
+    it.only('Deposit Function : ', async () => {
       console.log('Deposit function');
       console.log('BEFORE DEPOSIT');
       await masterchef.add(1000, lpToken1.target, true);
